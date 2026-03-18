@@ -1,4 +1,4 @@
-package Repositorios;
+package Proyecto_Tienda.demo.Repositorios;
 
 import Proyecto_Tienda.demo.Entidades.Producto;
 import org.springframework.data.jpa.repository.JpaRepository;
