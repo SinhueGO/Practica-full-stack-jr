@@ -25,14 +25,14 @@ public class ControladorProducto {
     @Autowired
     private ServicioProducto servicio;
 
-    // 1. GET - Listado con paginación
+    // 1. GET
     @Operation(summary = "Listar productos con paginación")
     @GetMapping
     public Page<Producto> listar(Pageable pageable) {
         return repositorio.findAll(pageable);
     }
 
-    // 2. POST - Crear nuevo producto con validaciones
+    // 2. POST
     @Operation(summary = "Crear un nuevo producto")
     @PostMapping
     public ResponseEntity<?> crear(@RequestBody Producto producto) {
@@ -45,7 +45,7 @@ public class ControladorProducto {
         return ResponseEntity.ok(repositorio.save(producto));
     }
 
-    // 3. GET - Obtener detalle de un producto por ID
+    // 3. GET
     @Operation(summary = "Obtener detalle de un producto por ID")
     @GetMapping("/{id}")
     public ResponseEntity<Producto> detalle(@PathVariable Integer id) {
@@ -54,7 +54,7 @@ public class ControladorProducto {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 4. PUT - Actualizar datos de un producto existente
+    // 4. PUT
     @Operation(summary = "Actualizar datos básicos de un producto")
     @PutMapping("/{id}")
     public ResponseEntity<?> actualizar(@PathVariable Integer id, @RequestBody Producto datosNuevos) {
@@ -67,7 +67,7 @@ public class ControladorProducto {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    // 5. PATCH - Activar o desactivar producto (Invertir estado)
+    // 5. PATCH
     @Operation(summary = "Activar o desactivar un producto")
     @PatchMapping("/{id}/activar")
     public ResponseEntity<Producto> cambiarEstado(@PathVariable Integer id) {
@@ -77,7 +77,7 @@ public class ControladorProducto {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    // 6. POST - Ajuste de inventario (Suma o resta existencias)
+    // 6. POST
     @Operation(summary = "Ajuste de inventario (Requiere cantidad y razón)")
     @PostMapping("/{id}/ajustar")
     public ResponseEntity<?> ajustar(@PathVariable Integer id, @RequestBody Map<String, Object> body) {
@@ -87,8 +87,7 @@ public class ControladorProducto {
             }
             Integer cant = Integer.parseInt(body.get("cantidad").toString());
             String raz = body.get("razon").toString();
-
-            // Delegamos la lógica de negocio y validación de razón al servicio
+            
             return ResponseEntity.ok(servicio.ajustarStock(id, cant, raz));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error en el ajuste: " + e.getMessage());
