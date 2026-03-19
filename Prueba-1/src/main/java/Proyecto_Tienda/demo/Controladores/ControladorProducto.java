@@ -87,7 +87,7 @@ public class ControladorProducto {
             }
             Integer cant = Integer.parseInt(body.get("cantidad").toString());
             String raz = body.get("razon").toString();
-            
+
             return ResponseEntity.ok(servicio.ajustarStock(id, cant, raz));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error en el ajuste: " + e.getMessage());
