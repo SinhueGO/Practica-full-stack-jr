@@ -1,9 +1,10 @@
 package Proyecto_Tienda.demo.Controladores;
+
 import Proyecto_Tienda.demo.Entidades.Producto;
 import Proyecto_Tienda.demo.Repositorios.RepositorioProducto;
+import Proyecto_Tienda.demo.Servicios.ServicioProducto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,25 +22,31 @@ public class ControladorProducto {
     @Autowired
     private RepositorioProducto repositorio;
 
-    // 1. GET: Listado con paginación [Requisito de la actividad]
-    @Operation(summary = "Listar productos", description = "Obtiene la lista paginada de productos")
+    @Autowired
+    private ServicioProducto servicio;
+
+    // 1. GET - Listado con paginación
+    @Operation(summary = "Listar productos con paginación")
     @GetMapping
     public Page<Producto> listar(Pageable pageable) {
         return repositorio.findAll(pageable);
     }
 
-    // 2. POST: Crear producto con validaciones [Requisito de la actividad]
-    @Operation(summary = "Crear producto", description = "Valida nombre único y precio positivo")
+    // 2. POST - Crear nuevo producto con validaciones
+    @Operation(summary = "Crear un nuevo producto")
     @PostMapping
-    public ResponseEntity<?> crear(@Valid @RequestBody Producto producto) {
+    public ResponseEntity<?> crear(@RequestBody Producto producto) {
         if (repositorio.existsByNombre(producto.getNombre())) {
             return ResponseEntity.badRequest().body("Error: El nombre del producto ya existe.");
+        }
+        if (producto.getPrecio() <= 0) {
+            return ResponseEntity.badRequest().body("Error: El precio debe ser mayor a 0.");
         }
         return ResponseEntity.ok(repositorio.save(producto));
     }
 
-    // 3. GET: Detalle de producto
-    @Operation(summary = "Ver detalle", description = "Obtiene un producto por su ID")
+    // 3. GET - Obtener detalle de un producto por ID
+    @Operation(summary = "Obtener detalle de un producto por ID")
     @GetMapping("/{id}")
     public ResponseEntity<Producto> detalle(@PathVariable Integer id) {
         return repositorio.findById(id)
@@ -47,36 +54,44 @@ public class ControladorProducto {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 4. PATCH: Activar/Desactivar [Requisito de la actividad]
-    @Operation(summary = "Activar/Desactivar", description = "Alterna el estado activo del producto")
-    @PatchMapping("/{id}/activar")
-    public Producto cambiarEstado(@PathVariable Integer id) {
-        Producto p = repositorio.findById(id).orElseThrow();
-        p.setActivo(!p.getActivo()); // Invierte el estado actual
-        return repositorio.save(p);
+    // 4. PUT - Actualizar datos de un producto existente
+    @Operation(summary = "Actualizar datos básicos de un producto")
+    @PutMapping("/{id}")
+    public ResponseEntity<?> actualizar(@PathVariable Integer id, @RequestBody Producto datosNuevos) {
+        return repositorio.findById(id).map(p -> {
+            p.setNombre(datosNuevos.getNombre());
+            p.setPrecio(datosNuevos.getPrecio());
+            p.setMarca(datosNuevos.getMarca());
+            p.setCategoria(datosNuevos.getCategoria());
+            return ResponseEntity.ok(repositorio.save(p));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    // 5. POST: Ajuste de inventario [Requisito de la actividad - Corregido para evitar Error 500]
-    @Operation(summary = "Ajuste de inventario", description = "Suma o resta existencias. Requiere 'cantidad' y 'razon'")
+    // 5. PATCH - Activar o desactivar producto (Invertir estado)
+    @Operation(summary = "Activar o desactivar un producto")
+    @PatchMapping("/{id}/activar")
+    public ResponseEntity<Producto> cambiarEstado(@PathVariable Integer id) {
+        return repositorio.findById(id).map(p -> {
+            p.setActivo(!p.getActivo());
+            return ResponseEntity.ok(repositorio.save(p));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    // 6. POST - Ajuste de inventario (Suma o resta existencias)
+    @Operation(summary = "Ajuste de inventario (Requiere cantidad y razón)")
     @PostMapping("/{id}/ajustar")
-    public ResponseEntity<?> ajustarInventario(@PathVariable Integer id, @RequestBody Map<String, Object> ajuste) {
+    public ResponseEntity<?> ajustar(@PathVariable Integer id, @RequestBody Map<String, Object> body) {
         try {
-            Producto p = repositorio.findById(id).orElseThrow();
-
-            // Validación de la razón (Requisito obligatorio)
-            if (!ajuste.containsKey("razon") || ajuste.get("razon").toString().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("Error: Debe proporcionar una razón para el ajuste.");
+            if (!body.containsKey("cantidad") || !body.containsKey("razon")) {
+                return ResponseEntity.badRequest().body("Error: Debe proporcionar 'cantidad' y 'razon'.");
             }
+            Integer cant = Integer.parseInt(body.get("cantidad").toString());
+            String raz = body.get("razon").toString();
 
-            // Conversión segura de tipos para evitar el error 500 visto en Swagger
-            Integer cantidad = Integer.parseInt(ajuste.get("cantidad").toString());
-
-            p.setExistencias(p.getExistencias() + cantidad);
-            repositorio.save(p);
-            return ResponseEntity.ok(p);
-
+            // Delegamos la lógica de negocio y validación de razón al servicio
+            return ResponseEntity.ok(servicio.ajustarStock(id, cant, raz));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error en los datos enviados: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error en el ajuste: " + e.getMessage());
         }
     }
 }
