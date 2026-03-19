@@ -1,7 +1,7 @@
-package Proyecto_Tienda.demo.Servicios;
+package proyectotienda.servicios;
 
-import Proyecto_Tienda.demo.Entidades.Producto;
-import Proyecto_Tienda.demo.Repositorios.RepositorioProducto;
+import proyectotienda.entidades.Producto;
+import proyectotienda.repositorios.RepositorioProducto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +20,7 @@ public class ServicioProducto {
 
 
         if (razon == null || razon.trim().isEmpty()) {
-            throw new RuntimeException("La razón es obligatoria para el ajuste");
+            throw new IllegalArgumentException("La razón es obligatoria para el ajuste");
         }
 
 

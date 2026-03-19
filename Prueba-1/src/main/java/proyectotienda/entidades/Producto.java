@@ -1,4 +1,4 @@
-package Proyecto_Tienda.demo.Entidades;
+package proyectotienda.entidades;
 
 
 import jakarta.persistence.Entity;

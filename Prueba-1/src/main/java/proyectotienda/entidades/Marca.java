@@ -1,4 +1,4 @@
-package Proyecto_Tienda.demo.Entidades;
+package proyectotienda.entidades;
 
 
 import jakarta.persistence.Column;
@@ -10,13 +10,13 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name = "categorias")
+@Table(name = "marcas")
 @Data
-public class Categoria {
+public class Marca {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id_Categoria;
+    private Integer idMarca;
 
-    @Column(name = "categorias_Name")
+    @Column(name = "marca_Name")
     private String nombre;
 }

@@ -1,4 +1,4 @@
-package Proyecto_Tienda.demo;
+package proyectotienda;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

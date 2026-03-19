@@ -1,8 +1,8 @@
-package Proyecto_Tienda.demo.Controladores;
+package proyectotienda.controladores;
 
-import Proyecto_Tienda.demo.Entidades.Producto;
-import Proyecto_Tienda.demo.Repositorios.RepositorioProducto;
-import Proyecto_Tienda.demo.Servicios.ServicioProducto;
+import proyectotienda.entidades.Producto;
+import proyectotienda.repositorios.RepositorioProducto;
+import proyectotienda.servicios.ServicioProducto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ public class ControladorProducto {
     // 2. POST
     @Operation(summary = "Crear un nuevo producto")
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody Producto producto) {
+    public ResponseEntity<Object> crear(@RequestBody Producto producto) {
         if (repositorio.existsByNombre(producto.getNombre())) {
             return ResponseEntity.badRequest().body("Error: El nombre del producto ya existe.");
         }
@@ -57,13 +57,17 @@ public class ControladorProducto {
     // 4. PUT
     @Operation(summary = "Actualizar datos básicos de un producto")
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Integer id, @RequestBody Producto datosNuevos) {
+    public ResponseEntity<Object> actualizar(@PathVariable Integer id, @RequestBody Producto datosNuevos) {
         return repositorio.findById(id).map(p -> {
             p.setNombre(datosNuevos.getNombre());
             p.setPrecio(datosNuevos.getPrecio());
             p.setMarca(datosNuevos.getMarca());
             p.setCategoria(datosNuevos.getCategoria());
-            return ResponseEntity.ok(repositorio.save(p));
+
+            // Castamos el resultado a Object para que coincida con la firma del método
+            Object productoGuardado = repositorio.save(p);
+            return ResponseEntity.ok(productoGuardado);
+
         }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -80,7 +84,7 @@ public class ControladorProducto {
     // 6. POST
     @Operation(summary = "Ajuste de inventario (Requiere cantidad y razón)")
     @PostMapping("/{id}/ajustar")
-    public ResponseEntity<?> ajustar(@PathVariable Integer id, @RequestBody Map<String, Object> body) {
+    public ResponseEntity<Object> ajustar(@PathVariable Integer id, @RequestBody Map<String, Object> body) {
         try {
             if (!body.containsKey("cantidad") || !body.containsKey("razon")) {
                 return ResponseEntity.badRequest().body("Error: Debe proporcionar 'cantidad' y 'razon'.");
