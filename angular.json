@@ -3,11 +3,11 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "analytics": "93da6595-2dbd-4730-808d-8977382ebe8f"
+    "analytics": false
   },
   "newProjectRoot": "projects",
   "projects": {
-    "tienda-frontend": {
+    "proyecto-tienda-frontend": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -27,15 +27,9 @@
             ],
             "styles": [
               "src/styles.css"
-            ],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
-            "security": {
-              "allowedHosts": []
-            },
-            "ssr": {
-              "entry": "src/server.ts"
-            }
+            ],"polyfills": [
+              "zone.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -65,10 +59,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "tienda-frontend:build:production"
+              "buildTarget": "proyecto-tienda-frontend:build:production"
             },
             "development": {
-              "buildTarget": "tienda-frontend:build:development"
+              "buildTarget": "proyecto-tienda-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"
