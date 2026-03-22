@@ -27,6 +27,7 @@ public class ControladorProducto {
     @Autowired
     private ServicioProducto servicio;
 
+
     // 1. GET
     @Operation(summary = "Listar productos con paginación")
     @GetMapping
@@ -57,19 +58,16 @@ public class ControladorProducto {
     }
 
     // 4. PUT
-    @Operation(summary = "Actualizar datos básicos de un producto")
     @PutMapping("/{id}")
-    public ResponseEntity<Object> actualizar(@PathVariable Integer id, @RequestBody Producto datosNuevos) {
+    public ResponseEntity<Producto> actualizar(@PathVariable Integer id, @RequestBody Producto datosNuevos) {
         return repositorio.findById(id).map(p -> {
             p.setNombre(datosNuevos.getNombre());
             p.setPrecio(datosNuevos.getPrecio());
-            p.setMarca(datosNuevos.getMarca());
-            p.setCategoria(datosNuevos.getCategoria());
+            p.setExistencias(datosNuevos.getExistencias());
+            if (datosNuevos.getMarca() != null) p.setMarca(datosNuevos.getMarca());
+            if (datosNuevos.getCategoria() != null) p.setCategoria(datosNuevos.getCategoria());
 
-            // Castamos el resultado a Object para que coincida con la firma del método
-            Object productoGuardado = repositorio.save(p);
-            return ResponseEntity.ok(productoGuardado);
-
+            return ResponseEntity.ok(repositorio.save(p));
         }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -98,5 +96,15 @@ public class ControladorProducto {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error en el ajuste: " + e.getMessage());
         }
+    }
+
+    // 7. DELETE
+    @Operation(summary = "Eliminar un producto permanentemente")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> eliminar(@PathVariable Integer id) {
+        return repositorio.findById(id).map(p -> {
+            repositorio.delete(p);
+            return ResponseEntity.ok().build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

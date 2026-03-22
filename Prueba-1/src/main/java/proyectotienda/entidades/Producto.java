@@ -1,6 +1,5 @@
 package proyectotienda.entidades;
 
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -20,12 +19,14 @@ public class Producto {
     private Integer id;
 
     private String nombre;
-    private Double precio;
-    private Integer existencias;
-    private Boolean activo;
+
     @Min(value = 0, message = "El precio debe ser mayor a 0")
+    private Double precio;
 
     @Min(value = 0, message = "Las existencias no pueden ser negativas")
+    private Integer existencias;
+
+    private Boolean activo;
 
     @ManyToOne
     @JoinColumn(name = "id_marca")
