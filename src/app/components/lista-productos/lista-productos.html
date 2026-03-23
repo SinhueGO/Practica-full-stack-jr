@@ -6,24 +6,22 @@
     
     <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
       <input [(ngModel)]="nuevoProducto.nombre" placeholder="Nombre" style="padding: 5px; flex: 1; min-width: 150px;">
-      
       <input type="number" [(ngModel)]="nuevoProducto.precio" placeholder="Precio" style="padding: 5px; width: 100px;">
-      
       <input type="number" [(ngModel)]="nuevoProducto.existencias" placeholder="Stock" style="padding: 5px; width: 80px;">
 
-      <select [(ngModel)]="nuevoProducto.marca" style="padding: 5px; min-width: 130px;">
-        <option [ngValue]="null" disabled>Seleccionar Marca</option>
-        @for (m of marcas; track m.idMarca) {
-          <option [ngValue]="m">{{ m.nombre }}</option>
-        }
-      </select>
+      <select [(ngModel)]="nuevoProducto.marca" [compareWith]="compararObjetos" style="padding: 5px; min-width: 130px;">
+      <option [ngValue]="null" disabled>Seleccionar Marca</option>
+      @for (m of marcas; track m.idMarca) {
+        <option [ngValue]="m">{{ m.nombre }}</option>
+      }
+    </select>
 
-      <select [(ngModel)]="nuevoProducto.categoria" style="padding: 5px; min-width: 130px;">
-        <option [ngValue]="null" disabled>Seleccionar Categoría</option>
-        @for (c of categorias; track c.idCategoria) {
-          <option [ngValue]="c">{{ c.nombre }}</option>
-        }
-      </select>
+    <select [(ngModel)]="nuevoProducto.categoria" [compareWith]="compararObjetos" style="padding: 5px; min-width: 130px;">
+      <option [ngValue]="null" disabled>Seleccionar Categoría</option>
+      @for (c of categorias; track c.idCategoria) {
+        <option [ngValue]="c">{{ c.nombre }}</option>
+      }
+    </select>
 
       <button (click)="guardar()" style="padding: 6px 12px; cursor: pointer; background-color: #27ae60; color: white; border: none; border-radius: 4px;">
         {{ nuevoProducto.id ? 'Actualizar' : 'Guardar' }}
@@ -43,7 +41,9 @@
         <th style="padding: 10px; text-align: left;">ID</th>
         <th style="padding: 10px; text-align: left;">Nombre</th>
         <th style="padding: 10px; text-align: left;">Precio</th>
-        <th style="padding: 10px; text-align: left;">Existencias</th>
+        <th style="padding: 10px; text-align: left;">Stock</th>
+        <th style="padding: 10px; text-align: left;">Marca</th>
+        <th style="padding: 10px; text-align: left;">Categoría</th>
         <th style="padding: 10px; text-align: center;">Acciones</th>
       </tr>
     </thead>
@@ -54,22 +54,57 @@
           <td style="padding: 8px;">{{ p.nombre }}</td>
           <td style="padding: 8px; text-align: right;">{{ p.precio | currency }}</td>
           <td style="padding: 8px; text-align: center;">{{ p.existencias }}</td>
+          <td style="padding: 8px;">{{ p.marca?.nombre || 'N/A' }}</td>
+          <td style="padding: 8px;">{{ p.categoria?.nombre || 'N/A' }}</td>
           <td style="padding: 8px; text-align: center;">
+            <button (click)="verDetalles(p)" style="padding: 4px 8px; background-color: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;">
+              Ver
+            </button>
             <button (click)="prepararEditar(p)" style="padding: 4px 8px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;">
               Editar
             </button>
             <button (click)="borrar(p.id)" style="padding: 4px 8px; background-color: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer;">
-              Eliminar
+              Borrar
             </button>
           </td>
         </tr>
       } @empty {
         <tr>
-          <td colspan="5" style="padding: 20px; text-align: center; color: #7f8c8d;">
-            No se encontraron productos en el inventario.
+          <td colspan="7" style="padding: 20px; text-align: center; color: #7f8c8d;">
+            No hay productos registrados.
           </td>
         </tr>
       }
     </tbody>
   </table>
+
+  @if (mostrarModal && productoSeleccionado) {
+    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 9999;">
+      <div style="background: white; padding: 25px; border-radius: 12px; width: 450px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); position: relative;">
+        
+        <h2 style="margin-top: 0; color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+          Ficha del Producto
+        </h2>
+        
+        <div style="line-height: 2; font-size: 15px;">
+          <p><strong>Identificador:</strong> #{{ productoSeleccionado.id }}</p>
+          <p><strong>Nombre:</strong> {{ productoSeleccionado.nombre }}</p>
+          <p><strong>Precio Unitario:</strong> {{ productoSeleccionado.precio | currency }}</p>
+          <p><strong>Existencias en Almacén:</strong> {{ productoSeleccionado.existencias }} unidades</p>
+          <p><strong>Marca:</strong> {{ productoSeleccionado.marca?.nombre || 'No especificada' }}</p>
+          <p><strong>Categoría:</strong> {{ productoSeleccionado.categoria?.nombre || 'No especificada' }}</p>
+          
+          <p><strong>Disponibilidad:</strong> 
+            <span [style.color]="productoSeleccionado.existencias > 0 ? '#27ae60' : '#e74c3c'" style="font-weight: bold; background: #f9f9f9; padding: 3px 8px; border-radius: 5px;">
+              {{ productoSeleccionado.existencias > 0 ? '✅ ACTIVO' : '❌ INACTIVO (SIN STOCK)' }}
+            </span>
+          </p>
+        </div>
+
+        <button (click)="cerrarModal()" style="margin-top: 20px; width: 100%; padding: 12px; background-color: #34495e; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+          Cerrar Vista
+        </button>
+      </div>
+    </div>
+  }
 </div>

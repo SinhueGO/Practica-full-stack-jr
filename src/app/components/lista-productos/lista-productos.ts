@@ -25,6 +25,19 @@ export class ListaProductos implements OnInit {
 
   constructor(private productoService: ProductoService) {}
 
+  productoSeleccionado: any = null;
+  mostrarModal: boolean = false;
+
+  verDetalles(producto: any): void {
+    this.productoSeleccionado = producto;
+    this.mostrarModal = true;
+  }
+
+  cerrarModal(): void {
+    this.mostrarModal = false;
+    this.productoSeleccionado = null;
+  }
+
   ngOnInit(): void { 
     this.cargarProductos();
     this.cargarRelaciones();
@@ -69,5 +82,14 @@ export class ListaProductos implements OnInit {
 
   cancelarEdicion(): void {
     this.nuevoProducto = { nombre: '', precio: 0, existencias: 0 };
+  }
+
+  compararObjetos(o1: any, o2: any): boolean {
+    if (o1 && o2) {
+      const id1 = o1.idMarca || o1.idCategoria || o1.id;
+      const id2 = o2.idMarca || o2.idCategoria || o2.id;
+      return id1 === id2;
+    }
+    return o1 === o2;
   }
 }
