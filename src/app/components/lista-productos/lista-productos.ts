@@ -12,23 +12,32 @@ import { FormsModule } from '@angular/forms';
 })
 export class ListaProductos implements OnInit {
   productos: any[] = [];
+  marcas: any[] = [];
+  categorias: any[] = [];
   
   nuevoProducto: any = {
     nombre: '',
     precio: 0,
-    existencias: 0
+    existencias: 0,
+    marca: null,
+    categoria: null 
   };
 
   constructor(private productoService: ProductoService) {}
 
   ngOnInit(): void { 
-    this.cargarProductos(); 
+    this.cargarProductos();
+    this.cargarRelaciones();
   }
 
   cargarProductos(): void {
     this.productoService.listar().subscribe(data => {
       this.productos = data.content ? data.content : data;
     });
+  }
+  cargarRelaciones(): void {
+    this.productoService.listarMarcas().subscribe(data => this.marcas = data);
+    this.productoService.listarCategorias().subscribe(data => this.categorias = data);
   }
 
   guardar(): void {
@@ -49,7 +58,7 @@ export class ListaProductos implements OnInit {
 
   finalizarOperacion(): void {
     this.cargarProductos();
-    this.nuevoProducto = { nombre: '', precio: 0, existencias: 0 };
+    this.nuevoProducto = { nombre: '', precio: 0, existencias: 0, marca: null, categoria: null };
   }
 
   borrar(id: number): void {

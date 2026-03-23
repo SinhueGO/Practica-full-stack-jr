@@ -17,4 +17,12 @@ export class ProductoService {
   actualizar(id: number, producto: any): Observable<any> {return this.http.put(`${this.apiUrl}/${id}`, producto);}
 
   eliminar(id: number): Observable<any> {return this.http.delete(`${this.apiUrl}/${id}`); }
+
+  listarMarcas(): Observable<any[]> {
+    return this.http.get<any[]>('http://localhost:8080/api/marcas');
+  }
+
+  listarCategorias(): Observable<any[]> {
+    return this.http.get<any[]>('http://localhost:8080/api/categorias');
+  }
 }
